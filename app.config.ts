@@ -19,7 +19,7 @@ export default defineAppConfig({
     },
     footer: {
       credits: {
-        enabled: true, // possible value are : true | false
+        enabled: false, // text at bottom of footer, possible value are : true | false
         repository: 'https://www.github.com/while-basic/chris-celaya-blog' // our github repository
       },
       navigation: true, // possible value are : true | false
