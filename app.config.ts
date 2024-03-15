@@ -1,7 +1,7 @@
 // https://github.com/nuxt-themes/alpine/blob/main/nuxt.schema.ts
 export default defineAppConfig({
   alpine: {
-    title: 'Alpine',
+    title: 'Blog',
     description: 'The minimalist blog theme',
     image: {
       src: '/social-card-preview.png',
