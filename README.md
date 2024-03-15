@@ -1,13 +1,13 @@
-# Alpine Starter
+# El Paso Tech
 
-Starter template for [Alpine](https://alpine.nuxt.space).
+## Installation
 
-## Clone
+### Clone
 
-Clone the repository (using `nuxi`):
+Clone the repository (using `git clone`):
 
 ```bash
-npx nuxi init -t themes/alpine
+git clone https://github.com/while-basic/el-paso-tech-blog
 ```
 
 ## Setup
@@ -28,8 +28,6 @@ pnpm dev
 
 Can be deployed to Vercel Functions, Netlify Functions, AWS, and most Node-compatible environments.
 
-Look at all the available presets [here](https://v3.nuxtjs.org/guide/deploy/presets).
-
 ```bash
 pnpm build
 ```
@@ -37,7 +35,6 @@ pnpm build
 ## Static Generation
 
 Use the `generate` command to build your application.
-
 The HTML files will be generated in the .output/public directory and ready to be deployed to any static compatible hosting.
 
 ```bash
@@ -53,5 +50,3 @@ pnpm preview
 ```
 
 ---
-
-For a detailed explanation of how things work, check out [Alpine](https://alpine.nuxt.space).
