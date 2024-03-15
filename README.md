@@ -1,4 +1,4 @@
-# El Paso Tech
+# Chris Celaya Blog
 
 ## Installation
 
