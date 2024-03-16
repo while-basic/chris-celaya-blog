@@ -7,7 +7,7 @@
 Clone the repository (using `git clone`):
 
 ```bash
-git clone https://github.com/while-basic/el-paso-tech-blog
+git clone https://github.com/while-basic/chris-celaya-blog
 ```
 
 ## Setup
