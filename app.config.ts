@@ -35,5 +35,32 @@ export default defineAppConfig({
         href: 'https://www.linkedin.com/in/christophercelaya'
       }
     },
+    prose: {
+      copyButton: {
+        iconCopy: 'ph:copy',
+        iconCopied: 'ph:check'
+      },
+      headings: {
+        icon: 'ph:link'
+      },
+      code: {
+        theme: {
+          default: 'github-light',
+          dark: 'github-dark'
+        },
+        languages: {
+          python: 'Python',
+          js: 'JavaScript',
+          ts: 'TypeScript',
+          bash: 'Bash',
+          shell: 'Shell'
+        },
+        highlighter: 'shiki',
+        options: {
+          defaultLanguage: 'plaintext',
+          background: true
+        }
+      }
+    }
   }
 })
