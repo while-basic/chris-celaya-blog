@@ -144,7 +144,7 @@ tokenizer = get_chat_template(
 
 ## Dataset Preparation
 
-We utilize the **Andy-3.5** dataset, a curated collection of Minecraft-specific dialogues. The dataset is preprocessed to align with the ChatML format:
+We utilize the Andy-3.5 dataset, curated and fine-tuned by Sweaterdog, specifically for Minecraft tasks. This dataset is designed to provide the AI with contextual knowledge of Minecraft gameplay, including crafting, exploration, and survival mechanics. The dataset is preprocessed to align with the ChatML format:
 
 ```python
 from datasets import load_dataset
@@ -165,7 +165,9 @@ dataset = dataset.map(formatting_prompts_func, batched=True)
 
 ### Explanation:
 
-The formatting step ensures that the dataset aligns with the model's expected input format, enhancing training consistency.
+The Andy-3.5 dataset is a robust, task-specific collection of dialogues that enhances the assistant’s knowledge of Minecraft. 
+
+The formatting step ensures the data aligns with the model’s expected input format, improving training efficiency and response quality.
 
 ## Training Configuration
 
@@ -299,7 +301,7 @@ The techniques covered here can be applied to various domain-specific applicatio
 
 ::div{class="flex flex-col gap-4 mt-8"}
   ## Additional Resources
-  - [Dataset](https://huggingface.co/Sweaterdog)
+  - [Dataset](https://huggingface.co/Sweaterdog/Andy-3.5)
  - [Mindcraft](https://github.com/kolbytn/mindcraft)
   - [LoRA Paper](https://arxiv.org/abs/2106.09685)
   - [Quantization Guide](https://huggingface.co/docs/transformers/quantization)
