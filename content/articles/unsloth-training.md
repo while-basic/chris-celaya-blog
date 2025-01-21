@@ -299,9 +299,11 @@ The techniques covered here can be applied to various domain-specific applicatio
 
 ::div{class="flex flex-col gap-4 mt-8"}
   ## Additional Resources
-  - [Unsloth Documentation](https://github.com/unslothai/unsloth)
+  - [Dataset](https://huggingface.co/Sweaterdog)
+ - [Mindcraft](https://github.com/kolbytn/mindcraft)
   - [LoRA Paper](https://arxiv.org/abs/2106.09685)
   - [Quantization Guide](https://huggingface.co/docs/transformers/quantization)
+  - [Unsloth Documentation](https://github.com/unslothai/unsloth)
   - [Join our Discord Community](https://discord.gg/UwrCbURA)
 ::
 
@@ -309,8 +311,7 @@ The techniques covered here can be applied to various domain-specific applicatio
   ### Share this tutorial
   - [Twitter](https://twitter.com/share?url=https://chriscelaya.com/articles/unsloth-training)
   - [LinkedIn](https://www.linkedin.com/shareArticle?url=https://chriscelaya.com/articles/unsloth-training)
-  - [GitHub](https://github.com/kolbytn/mindcraft)
-  - [Dataset](https://huggingface.co/Sweaterdog)
+
 ::
 
 Written by:
