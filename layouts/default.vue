@@ -1,7 +1,6 @@
 <template>
   <div>
     <slot />
-    <Analytics />
   </div>
 </template>
 

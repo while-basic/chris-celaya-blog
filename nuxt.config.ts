@@ -1,3 +1,6 @@
+// https://nuxt.com/docs/api/configuration/nuxt-config
+import { defineNuxtConfig } from 'nuxt/config'
+
 export default defineNuxtConfig({
   // https://github.com/nuxt-themes/alpine
   extends: '@nuxt-themes/alpine',
@@ -6,9 +9,19 @@ export default defineNuxtConfig({
     // https://github.com/nuxt-modules/plausible
     '@nuxtjs/plausible',
     // https://github.com/nuxt/devtools
-    '@nuxt/devtools',
-    '@vercel/analytics/nuxt'
+    '@nuxt/devtools'
   ],
+
+  app: {
+    head: {
+      script: [
+        {
+          src: '/_vercel/insights/script.js',
+          defer: true
+        }
+      ]
+    }
+  },
 
   content: {
     highlight: {
