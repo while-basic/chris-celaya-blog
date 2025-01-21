@@ -125,7 +125,7 @@ model = FastLanguageModel.get_peft_model(
 
 LoRA allows fine-tuning a small subset of parameters while keeping the majority of the model frozen. This is computationally efficient and ideal for domain-specific adaptation, such as Minecraft-related tasks. 
 
-A full model tune can be done with LoRA, but it is better suited for small adjustments, as demonstrated in the Minecraft implementation.
+A full model tune can be done with LoRA, but it is better suited for small adjustments.
 
 ## Defining a Chat Template
 
