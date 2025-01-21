@@ -1,5 +1,5 @@
 ---
-cover: /articles/ai-assistant.webp  # TODO: Replace with Minecraft-themed image
+cover: /minecraft.webp
 author:
   name: Christopher B. Celaya
   avatarUrl: /generative-ai/storm.webp
@@ -17,21 +17,13 @@ toc: true
 A Case Study on Minecraft Using the Unsloth Framework
 
 ::alert{type="info"}
-🚀 **Source Code**: Find the complete implementation in our [GitHub repository](https://github.com/your-username/minecraft-ai-assistant).
+🚀 **Source Code**: Find the complete implementation and run using Mindcraft [GitHub repository](https://github.com/kolbytn/mindcraft).
 
-TODO: Create GitHub repository with complete code implementation
 ::
 
 ## Introduction
 
 This tutorial demonstrates how to fine-tune the Qwen 7B model to create "Andy," a Minecraft AI assistant, using the Unsloth framework for efficient training. You'll learn how to leverage cutting-edge techniques like 4-bit quantization and LoRA to achieve scalable fine-tuning without requiring extensive computational resources.
-
-::alert{type="info"}
-TODO: Add diagrams for:
-1. LoRA Architecture visualization
-2. 4-bit quantization memory comparison
-3. Training results graph
-::
 
 ### Key Steps Overview:
 
@@ -83,11 +75,6 @@ To begin, install the required packages. The `unsloth` framework and its depende
 ```
 
 ## Base Model Initialization
-
-::div{class="flex justify-center my-8"}
-  ![4-bit Quantization](/articles/4bit-quantization.webp)
-  *Figure 2: 4-bit Quantization Memory Savings*
-::
 
 For this tutorial, we will utilize the **Qwen 7B** model, which has demonstrated strong performance in gaming-related tasks. The configuration ensures memory-efficient loading using 4-bit quantization:
 
@@ -296,14 +283,6 @@ After implementing the training pipeline, here are key recommendations for optim
 - Fine-tune repetition penalty for natural responses
 - Balance response length with max_new_tokens
 
-## Interactive Demo
-
-Try out the Minecraft AI Assistant directly in your browser:
-
-::div{class="my-8"}
-  <iframe src="https://huggingface.co/spaces/your-username/minecraft-assistant" width="100%" height="800px" frameborder="0"></iframe>
-::
-
 ## Conclusion
 
 This tutorial demonstrated how to efficiently fine-tune a large language model for a specific domain using the Unsloth framework. The Minecraft AI assistant example shows how to:
@@ -323,25 +302,20 @@ The techniques covered here can be applied to various domain-specific applicatio
   - [Unsloth Documentation](https://github.com/unslothai/unsloth)
   - [LoRA Paper](https://arxiv.org/abs/2106.09685)
   - [Quantization Guide](https://huggingface.co/docs/transformers/quantization)
-  - [Join our Discord Community](https://discord.gg/your-server)
+  - [Join our Discord Community](https://discord.gg/UwrCbURA)
 ::
 
 ::div{class="flex justify-between items-center mt-8 p-4 bg-gray-100 rounded-lg"}
   ### Share this tutorial
   - [Twitter](https://twitter.com/share?url=https://chriscelaya.com/articles/unsloth-training)
   - [LinkedIn](https://www.linkedin.com/shareArticle?url=https://chriscelaya.com/articles/unsloth-training)
-  - [GitHub](https://github.com/your-username/minecraft-ai-assistant)
+  - [GitHub](https://github.com/kolbytn/mindcraft)
+  - [Dataset](https://huggingface.co/Sweaterdog)
 ::
 
 Written by:
-
-- Christopher B. Celaya
+- Christopher Celaya
 - [chriscelaya.com](http://chriscelaya.com)
 - [chris@chriscelaya.com](mailto:chris@chriscelaya.com)
-
-::div{class="mt-8"}
-  ### Comments
-  Let us know your thoughts and questions below!
-  <div id="comments"></div>
-::
+- 
 
