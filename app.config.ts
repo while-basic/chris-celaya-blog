@@ -2,7 +2,7 @@
 export default defineAppConfig({
   alpine: {
     title: 'Blog',
-    description: 'A minimalist blog theme',
+    description: 'A blog about my projects and thoughts.',
     image: {
       src: '/social-card-preview.png',
       alt: 'An image showcasing my project.',
@@ -12,7 +12,7 @@ export default defineAppConfig({
     header: {
       position: 'right', // possible value are : | 'left' | 'center' | 'right'
       logo: {
-        path: '/logo.svg', // path of the logo
+        path: '', // path of the logo
         pathDark: '/logo-dark.svg', // path of the logo in dark mode, leave this empty if you want to use the same logo
         alt: 'alpine' // alt of the logo
       }
@@ -45,7 +45,7 @@ export default defineAppConfig({
       },
       code: {
         theme: {
-          default: 'github-light',
+          default: 'github-dark',
           dark: 'github-dark'
         },
         languages: {
@@ -53,7 +53,6 @@ export default defineAppConfig({
           js: 'JavaScript',
           ts: 'TypeScript',
           bash: 'Bash',
-          shell: 'Shell'
         },
         highlighter: 'shiki',
         options: {
