@@ -261,11 +261,6 @@ tokenizer.save_pretrained("andy_minecraft_bot")
 
 ## Results and Recommendations
 
-::div{class="flex justify-center my-8"}
-  ![Training Results](/articles/training-results.webp)
-  *Figure 3: Training Loss and Evaluation Metrics*
-::
-
 After implementing the training pipeline, here are key recommendations for optimal results:
 
 ### Dataset Enhancement
