@@ -81,19 +81,32 @@ For this tutorial, we will utilize the **Qwen 7B** model, which has demonstrated
 ```python
 from unsloth import FastLanguageModel
 import torch
+max_seq_length = 2048 # RoPE Scaling internally is supported
+dtype = None # None for auto detection. Float16 for Tesla T4, V100, Bfloat16 for Ampere+
+load_in_4bit = True # Use 4bit quantization to reduce memory usage. Can be False.
 
-# Model parameters
-max_seq_length = 2048 # Max sequence length can be increased, but instability occurs around 8192, with 16,000 recommended.
+fourbit_models = [
+    "unsloth/mistral-7b-bnb-4bit",
+    "unsloth/mistral-7b-instruct-v0.2-bnb-4bit",
+    "unsloth/llama-2-7b-bnb-4bit",
+    "unsloth/llama-2-13b-bnb-4bit",
+    "unsloth/codellama-34b-bnb-4bit",
+    "unsloth/tinyllama-bnb-4bit",
+    "unsloth/gemma-7b-bnb-4bit",
+    "unsloth/gemma-2b-bnb-4bit",
+    "unsloth/Qwen2.5-7B-bnb-4bit",
+]
 
-dtype = None  # Automatically detects the optimal precision (e.g., bf16 or fp16)
-load_in_4bit = True  # Enables memory-efficient quantization
+# Specify the desired data type (bfloat16 or float16)
+dtype = torch.bfloat16  # or torch.float16
 
-# Load the pre-trained model and tokenizer
 model, tokenizer = FastLanguageModel.from_pretrained(
-    model_name="unsloth/Qwen2.5-7B-bnb-4bit",
-    max_seq_length=max_seq_length,
-    dtype=dtype,
-    load_in_4bit=load_in_4bit,
+    model_name = "unsloth/Qwen2.5-7B-bnb-4bit",
+    max_seq_length = max_seq_length,
+    dtype = dtype,
+    load_in_4bit = load_in_4bit,
+    # token = "", # use one if using gated models like meta-llama/Llama-2-7b-hf
+    trust_remote_code=True, # Added this line to trust remote code
 )
 ```
 
