@@ -12,14 +12,21 @@ tags: ['AI', 'Machine Learning', 'LLM', 'Minecraft', 'Tutorial', 'Python', 'Unsl
 toc: true
 ---
 
-# Efficient Fine-Tuning of Large Language Models
+## Efficient Fine-Tuning of Large Language Models
 
 A Case Study on Minecraft Using the Unsloth Framework
 
 ::alert{type="info"}
-🚀 **Source Code**: Find the complete implementation and run using Mindcraft [GitHub repository](https://github.com/kolbytn/mindcraft).
+🚀 **Mindcraft Source Code**: Necessary for gameplay interaction
+[GitHub repository](https://github.com/kolbytn/mindcraft).
 
 ::
+
+::alert{type="info"}
+🚀 **Colab Notebook**: Follow along with the [Colab Notebook](https://github.com/kolbytn/mindcraft).
+
+::
+
 
 ## Introduction
 
@@ -98,7 +105,7 @@ fourbit_models = [
     "unsloth/gemma-7b-bnb-4bit", # New Google 6 trillion tokens model 2.5x faster!
     "unsloth/gemma-2b-bnb-4bit",
     "unsloth/Qwen2.5-7B-bnb-4bit",
-] # More models at https://huggingface.co/unsloth
+]
 
 # Specify the desired data type (bfloat16 or float16)
 dtype = torch.bfloat16  # or torch.float16
@@ -112,11 +119,6 @@ model, tokenizer = FastLanguageModel.from_pretrained(
     trust_remote_code=True, # Added this line to trust remote code
 )
 ```
-
-# Specify the desired data type (bfloat16 or float16)
-
-dtype = torch.bfloat16  # or torch.float16
-
 
 ## Incorporating LoRA Adapters
 
@@ -148,7 +150,7 @@ LoRA allows fine-tuning a small subset of parameters while keeping the majority 
 
 A full model tune can be done with LoRA, but it is better suited for small adjustments.
 
-# Dataset Preparation
+## Dataset Preparation
 
 We utilize the Andy-3.5 dataset, curated and fine-tuned by Sweaterdog, specifically for Minecraft tasks. This dataset is designed to provide the AI with contextual knowledge of Minecraft gameplay, including crafting, exploration, and survival mechanics. The dataset is preprocessed to align with the ChatML format:
 
@@ -173,6 +175,26 @@ dataset = load_dataset("Sweaterdog/Andy-3.5", split = "train")
 dataset = dataset.map(formatting_prompts_func, batched = True,)
 ```
 
+Note: To train only on completions (ignoring the user's input) read TRL's docs here.
+
+Using our get_chat_template function, we get the correct chat template.
+
+Normally one has to train `<|im_start|>` and `<|im_end|>`.
+
+Instead map `<|im_end|>` is to be the EOS token, and `<|im_start|>` stays as is.
+
+This requires no additional training of additional tokens.
+
+ShareGPT uses:
+
+```python
+{"from": "human", "value" : "Hi"}
+``` 
+
+## Initial ChatML Template and Dataset
+
+Here is how the format works by printing the fifth element.
+
 ```python
 dataset[5]["conversations"]
 ```
@@ -181,7 +203,7 @@ dataset[5]["conversations"]
 print(dataset[5]["text"])
 ``` 
 
-# Unsloth Chat Template
+## Unsloth Chat Template
 
 ```python
 unsloth_template = \
@@ -209,15 +231,19 @@ if False:
     )
 ```
 
+For more information on chat templates, view [Unsloth Templates](https://github.com/unslothai/unsloth/wiki#chat-templates).
+
 ## Training Configuration
 
 ::alert{type="success"}
 💡 **Pro Tip**: Monitor the training progress using Weights & Biases for better visualization and experiment tracking.
 ::
 
-For a full run, set max_steps to 0. Include num_train_epochs = 1 to specify a single epoch.
+We now configure and initiate the fine-tuning process. The parameters are optimized for efficiency on limited hardware.
 
-We now configure and initiate the fine-tuning process. The parameters are optimized for efficiency on limited hardware:
+For a full run, it is recommended to set `max_steps` to `0` and a new parameter which is `num_train_epochs` to `1`.
+
+Include `num_train_epochs = 1` to specify a single epoch.
 
 ```python
 from trl import SFTTrainer
@@ -231,13 +257,13 @@ trainer = SFTTrainer(
     dataset_text_field = "text",
     max_seq_length = max_seq_length,
     dataset_num_proc = 2, # Changed from 2 to 1 to disable multiprocessing
-    packing = False, # Can make training 5x faster for short sequences.
+    packing = False,      # Can make training 5x faster for short sequences.
     args = TrainingArguments(
         per_device_train_batch_size = 16, # Reduce to 1 if out of memory on free tier
-        gradient_accumulation_steps = 1, # Further reduced to 1
+        gradient_accumulation_steps = 1,  # Further reduced to 1
         warmup_steps = 500,
-        max_steps = 1000, # Default was set to 60
-        learning_rate = 2e-5,
+        max_steps = 1000,     # Default was set to 60
+        learning_rate = 2e-5, # Default was set to 2e-4
         fp16 = not is_bfloat16_supported(),
         bf16 = is_bfloat16_supported(),
         logging_steps = 1,
@@ -252,18 +278,16 @@ trainer = SFTTrainer(
 )
 ```
 
-::alert{type="info"}
-🚀 **Wandb.ai**: Enter your key to track the training process. [GitHub repository](ttps://wandb.ai/authorize).
+## Free Unused Memory
 
-::
+We explicitly release unused memory using `torch.cuda.empty_cache()`.
 
-# Show current memory stats
+Call this function before starting the training loop.
 
 ```python
 import torch
 torch.cuda.empty_cache()
 
-#@title Show current memory stats
 gpu_stats = torch.cuda.get_device_properties(0)
 start_gpu_memory = round(torch.cuda.max_memory_reserved() / 1024 / 1024 / 1024, 3)
 max_memory = round(gpu_stats.total_memory / 1024 / 1024 / 1024, 3)
@@ -271,16 +295,27 @@ print(f"GPU = {gpu_stats.name}. Max memory = {max_memory} GB.")
 print(f"{start_gpu_memory} GB of memory reserved.")
 ```
 
-# Train the Model
+## Train the Model
+
+Here we invoke the actual training process.
+
+This can take minutes to hours depending on your configuration.
+
+::alert{type="warning"}
+🚀 **Wandb.ai**: Enter your key to begin tracking the training process when prompted. [API Key](https://wandb.ai/authorize).
+
+::
 
 ```python
 trainer_stats = trainer.train()
 ```
 
-# Show final memory and time stats
+## Final Memory and Time Stats
+
+Review and collect the final memory and time statistics.
 
 ```python
-#@title Show final memory and time stats
+# Show final memory and time stats
 used_memory = round(torch.cuda.max_memory_reserved() / 1024 / 1024 / 1024, 3)
 used_memory_for_lora = round(used_memory - start_gpu_memory, 3)
 used_percentage = round(used_memory         /max_memory*100, 3)
@@ -293,9 +328,14 @@ print(f"Peak reserved memory % of max memory = {used_percentage} %.")
 print(f"Peak reserved memory for training % of max memory = {lora_percentage} %.")
 ```
 
-# Inference
+## Inference
+
+Now it is time to run the model.
+
+Since we're using ChatML, use `apply_chat_template` with `add_generation_prompt` set to `True`.
 
 ```python
+# Inference (single message)
 from unsloth.chat_templates import get_chat_template
 
 tokenizer = get_chat_template(
@@ -321,10 +361,12 @@ outputs = model.generate(input_ids = inputs, max_new_tokens = 64, use_cache = Tr
 tokenizer.batch_decode(outputs)
 ```
 
+## Streaming
 
-# Text Streaming
+You can also use a `TextStreamer` for continuous inference which allows you to see the generation token by token.
 
 ```python
+# Streaming (single message)
 FastLanguageModel.for_inference(model) # Enable native 2x faster inference
 
 messages = [
@@ -342,18 +384,30 @@ text_streamer = TextStreamer(tokenizer)
 _ = model.generate(input_ids = inputs, streamer = text_streamer, max_new_tokens = 128, use_cache = True)
 ```
 
-# Saving and Loading the Model
+## Saving and Loading the Model
+
+To save the final model as LoRA adapters, either use Huggingface's `push_to_hub` for an online save or `save_pretrained` for a local save.
+
+**NOTE:** This ONLY saves the LoRA adapters, and not the full model. Continue to the next section to save to 16bit or GGUF.
 
 ```python
+# Local saving
 # model.save_pretrained("lora_model") # Local saving
 # tokenizer.save_pretrained("lora_model")
+
+# Online saving
 model.push_to_hub("your-hf-username/Qwen2.5-7b-bnb-4bit-Andy-3.5-latest-lora-model-tutorial", token = "yout-token") # Online saving
-tokenizer.push_to_hub("your-hf-username/Qwen2.5-7b-bnb-4bit-Andy-3.5-latest-lora-model-tutorial", token = "you-token") # Online saving
+tokenizer.push_to_hub("your-hf-username/Qwen2.5-7b-bnb-4bit-Andy-3.5-latest-lora-model-tutorial", token = "your-token") # Online saving
 ```
 
-# Load Lora Adapters
+## Load Lora Adapters
+
+To load the LoRA adapters we just saved for inference, set `False` to `True`.
+
+`max_seq_length` can be increased to include longer sequences. The model loses stability ~8192 at the lowest, 16,000 recommended.
 
 ```python
+# Local loading
 if False:
     from unsloth import FastLanguageModel
     model, tokenizer = FastLanguageModel.from_pretrained(
@@ -379,55 +433,67 @@ text_streamer = TextStreamer(tokenizer)
 _ = model.generate(input_ids = inputs, streamer = text_streamer, max_new_tokens = 128, use_cache = True)
 ```
 
-# Saving to float16 for VLLM
+## Saving to float16 for VLLM (optional)
+
+Save directly in float16 by selecting `merged_16bit`, or in `int4` by selecting `merged_4bit`. Lora adapters are also available as a fallback option. 
+
+You can go to https://huggingface.co/settings/tokens for your personal tokens.
+
+::alert{type="warning"}
+Note: Be sure to change "your-hf-username", "name-of-model", and replace "your-token" with your Huggingface token.
+::
 
 ```python
-# Merge to 16bit
-if False: model.save_pretrained_merged("model", tokenizer, save_method = "merged_16bit",)
-if False: model.push_to_hub_merged("hf/model", tokenizer, save_method = "merged_16bit", token = "")
+# Save and merge to 16bit
+if False: model.save_pretrained_merged("name-of-model", tokenizer, save_method = "merged_16bit",)
+if False: model.push_to_hub_merged("your-hf-username/name-of-model", tokenizer, save_method = "merged_16bit", token = "your-hf-token")
 
-# Merge to 4bit
-if False: model.save_pretrained_merged("model", tokenizer, save_method = "merged_4bit",)
-if False: model.push_to_hub_merged("hf/model", tokenizer, save_method = "merged_4bit", token = "")
+# Save and merge to 4bit
+if False: model.save_pretrained_merged("name-of-model", tokenizer, save_method = "merged_4bit",)
+if False: model.push_to_hub_merged("your-hf-username/name-of-model", tokenizer, save_method = "merged_4bit", token = "your-hf-token")
 
-# Just LoRA adapters
-if False: model.save_pretrained_merged("model", tokenizer, save_method = "lora",)
-if False: model.push_to_hub_merged("hf/model", tokenizer, save_method = "lora", token = "")
+# Save LoRA adapters
+if False: model.save_pretrained_merged("name-of-model", tokenizer, save_method = "lora",)
+if False: model.push_to_hub_merged("your-hf-username/name-of-model", tokenizer, save_method = "lora", token = "your-hf-token")
 ```
 
-# GGUF / llama.cpp Conversions
+## GGUF / llama.cpp Conversions
+
+Save to GGUF / llama.cpp, natively. 
+
+Use `save_pretrained_gguf` for local saving and `push_to_hub_gguf` for uploading to huggingface.
+
+::alert{type="warning"}
+Note: Be sure to change "your-hf-username", "name-of-model", and replace "your-token" with your Huggingface token.
+::
+
+- `q8_0` - Fast conversion. High resource use, but generally acceptable.
+- `q4_k_m` - Recommended. Uses Q6_K for half of the attention.wv and feed_forward.w2 tensors, else Q4_K.
+- `q5_k_m` - Recommended. Uses Q6_K for half of the attention.wv and feed_forward.w2 tensors, else Q5_K.
+- `q4_k_m method` is allowed. 
+
+
+::alert{type="warning"}
+Note: Be sure to change "your-hf-username", "name-of-model", and replace "your-token" with your Huggingface token.
+::
 
 ```python
 # Save to 8bit Q8_0
-if False: model.save_pretrained_gguf("Qwen2.5-7B-bnb-4bit-Andy-3.5-latest-tutorial", tokenizer,)
-if True: model.push_to_hub_gguf("chriscelaya/codellama-34b", tokenizer, token = "your-hf-token")
+if False: model.save_pretrained_gguf("model-name", tokenizer,)
+if True: model.push_to_hub_gguf("your-hf-username/model-name", tokenizer, token = "your-hf-token")
 
 # Save to 16bit GGUF
-if False: model.save_pretrained_gguf("Qwen2.5-7B-bnb-4bit-Andy-3.5-latest-tutorial", tokenizer, quantization_method = "f16")
-if True: model.push_to_hub_gguf("chriscelaya/codellama-34b", tokenizer, quantization_method = "f16", token = "your-hf-token")
+if False: model.save_pretrained_gguf("model-name", tokenizer, quantization_method = "f16")
+if True: model.push_to_hub_gguf("your-hf-username/model-name", tokenizer, quantization_method = "f16", token = "your-hf-token")
 
 # Save to q4_k_m GGUF
-if False: model.save_pretrained_gguf("Qwen2.5-7B-bnb-4bit-Andy-3.5-latest-tutorial", tokenizer, quantization_method = "q4_k_m")
-if True: model.push_to_hub_gguf("chriscelaya/Qwen2.5-7B-bnb-4bit-Andy-3.5-latest-tutorial", tokenizer, quantization_method = "q4_k_m", token = "your-hf-token")
+if False: model.save_pretrained_gguf("model-name", tokenizer, quantization_method = "q4_k_m")
+if True: model.push_to_hub_gguf("your-hf-username/model-name", tokenizer, quantization_method = "q4_k_m", token = "your-hf-token")
 ```
 
-# Done
+## And we're done!
 
-
-
-## Saving the Model
-
-To preserve the trained model, we save it locally or push it to the Hugging Face Hub for broader accessibility:
-
-```python
-# Save locally
-model.save_pretrained("andy_minecraft_bot")
-tokenizer.save_pretrained("andy_minecraft_bot")
-
-# Save to Hugging Face (optional)
-# model.push_to_hub("your-username/andy-minecraft-bot", token="your-token")
-# tokenizer.push_to_hub("your-username/andy-minecraft-bot", token="your-token")
-```
+Now, use the `model-name.gguf` file or `model-name-Q4_K_M.gguf` file in `llama.cpp` or a UI based system like [LM-Studio](https://lmstudio.ai/).
 
 ## Results and Recommendations
 
@@ -448,7 +514,7 @@ After implementing the training pipeline, here are key recommendations for optim
 ### Inference Tuning
 - Adjust temperature for creativity vs. consistency
 - Fine-tune repetition penalty for natural responses
-- Balance response length with max_new_tokens
+- Balance response length with `max_new_tokens`
 
 ## Conclusion
 
@@ -475,7 +541,7 @@ The techniques covered here can be applied to various domain-specific applicatio
 ::
 
 ::div{class="flex justify-between items-center mt-8 p-4 bg-gray-100 rounded-lg"}
-  ### Share this tutorial
+  ## Share this tutorial
   - [Twitter](https://twitter.com/share?url=https://chriscelaya.com/articles/unsloth-training)
   - [LinkedIn](https://www.linkedin.com/shareArticle?url=https://chriscelaya.com/articles/unsloth-training)
 
@@ -485,5 +551,16 @@ Written by:
 - Christopher Celaya
 - [chriscelaya.com](http://chriscelaya.com)
 - [chris@chriscelaya.com](mailto:chris@chriscelaya.com)
-- 
 
+## Citation
+```
+@misc{celaya2025minecraft,
+  author = {Christopher B. Celaya},
+  title = {Efficient Fine-Tuning of Large Language Models - A Minecraft AI Assistant Tutorial},
+  year = {2025},
+  publisher = {GitHub},
+  journal = {GitHub repository},
+  howpublished = {\url{https://github.com/kolbytn/mindcraft}},
+  note = {\url{https://chris-celaya-blog.vercel.app/articles/unsloth-training}}
+}
+```
