@@ -114,8 +114,8 @@ model, tokenizer = FastLanguageModel.from_pretrained(
     max_seq_length = max_seq_length,
     dtype = dtype,
     load_in_4bit = load_in_4bit,
-    # token = "",           # use one if using gated models like meta-llama/Llama-2-7b-hf
-    trust_remote_code=True, # Add this line to trust remote code
+    # token = "your-token", # Use if using gated models like meta-llama/Llama-2-7b-hf
+    trust_remote_code = True, # Add this line to trust remote code
 )
 ```
 
@@ -207,30 +207,30 @@ This template defines how the conversation between a user and an assistant shoul
 ```python
 # Define a template for structuring chat interactions between user and assistant
 unsloth_template = \
-    "{{ bos_token }}" \  # Placeholder for the Beginning of Sequence (BOS) token, start of a sequence.
-    "{{ 'You are a helpful assistant to the user\n' }}" \  # A static string indicating the assistant's role.
-    "{% endif %}" \  # This is an empty "endif" placeholder that might be used for closing a conditional block in the template.
-    "{% for message in messages %}" \  # Start a loop over a list of messages to process each one.
-        "{% if message['role'] == 'user' %}" \  # Check if the message is from the user.
-            "{{ '>>> User: ' + message['content'] + '\n' }}" \  # Format the user's message with a prefix ">>> User:".
-        "{% elif message['role'] == 'assistant' %}" \  # Check if the message is from the assistant.
-            "{{ '>>> Assistant: ' + message['content'] + eos_token + '\n' }}" \  # Format the assistant's message with a prefix ">>> Assistant:" and append the EOS token.
-        "{% endif %}" \  # Close the conditional block for the "if-elif".
-    "{% endfor %}" \  # Close the loop that iterates through messages.
-    "{% if add_generation_prompt %}" \  # Check if we need to add a generation prompt.
-        "{{ '>>> Assistant: ' }}" \  # If the condition is true, add a prompt indicating the assistant should respond.
-    "{% endif %}"  # Close the "if" block for the generation prompt condition.
+    "{{ bos_token }}" \  # Placeholder for the Beginning of Sequence (BOS) token, start of a sequence
+    "{{ 'You are a helpful assistant to the user\n' }}" \  # A static string indicating the assistant's role
+    "{% endif %}" \  # Used for closing a conditional block in the template
+    "{% for message in messages %}" \  # Start a loop over a list of messages to process each one
+        "{% if message['role'] == 'user' %}" \  # Check if the message is from the user
+            "{{ '>>> User: ' + message['content'] + '\n' }}" \  # Format the user's message with a prefix ">>> User:"
+        "{% elif message['role'] == 'assistant' %}" \  # Check if the message is from the assistant
+            "{{ '>>> Assistant: ' + message['content'] + eos_token + '\n' }}" \  # Format the assistant's message with a prefix ">>> Assistant:" and append the EOS token
+        "{% endif %}" \  # Close the conditional block for the "if-elif"
+    "{% endfor %}" \  # Close the loop that iterates through messages
+    "{% if add_generation_prompt %}" \  # Check if we need to add a generation prompt
+        "{{ '>>> Assistant: ' }}" \  # If the condition is true, add a prompt indicating the assistant should respond
+    "{% endif %}" # Close the "if" block for the generation prompt condition
 
 # Define the EOS (End of Sequence) token used to mark the end of the assistant's response.
 unsloth_eos_token = "eos_token"
 
-# The following block is a configuration that won't be executed because the condition is 'False'.
-if False:  # This condition prevents the code inside the block from executing.
+# The following block is a configuration that won't be executed because the condition is 'False'
+if False:  # This condition prevents the code inside the block from executing
     tokenizer = get_chat_template(
-        tokenizer,  # The tokenizer object to be updated.
+        tokenizer,  # The tokenizer object to be updated
         chat_template = (unsloth_template, unsloth_eos_token,),  # Provide the template (unsloth_template) and EOS token.
-        mapping = {"role" : "from", "content" : "value", "user" : "human", "assistant" : "gpt"},  # Define a mapping to convert between different naming conventions (e.g., 'role' -> 'from', 'content' -> 'value').
-        map_eos_token = True,  # A flag that, if set to True, will map <|im_end|> to </s> (used as an EOS token).
+        mapping = {"role" : "from", "content" : "value", "user" : "human", "assistant" : "gpt"},  # Define a mapping to convert between different naming conventions (e.g., 'role' -> 'from', 'content' -> 'value')
+        map_eos_token = True,  # A flag that, if set to True, will map <|im_end|> to </s> (used as an EOS token)
     )
 ```
 
@@ -287,6 +287,7 @@ trainer = SFTTrainer(
         output_dir = "outputs",  # Directory where the training output (model checkpoints, logs, etc.) will be saved.
         
         gradient_checkpointing = True,  # Enable gradient checkpointing to reduce memory usage during training. Useful for large models.
+        num_train_epochs = 1,
     ),
 )
 ```
