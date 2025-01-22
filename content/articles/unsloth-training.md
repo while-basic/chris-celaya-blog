@@ -27,7 +27,6 @@ A Case Study on Minecraft Using the Unsloth Framework
 
 ::
 
-
 ## Introduction
 
 This tutorial demonstrates how to fine-tune the Qwen 7B model to create "Andy," a Minecraft AI assistant, using the Unsloth framework for efficient training. You'll learn how to leverage cutting-edge techniques like 4-bit quantization and LoRA to achieve scalable fine-tuning without requiring extensive computational resources.
@@ -90,11 +89,11 @@ For this tutorial, we will utilize the **Qwen 7B** model, which has demonstrated
 ```python
 from unsloth import FastLanguageModel
 import torch
-max_seq_length = 2048 # Choose any! RoPE Scaling internally is supported!
-dtype = None # None for auto detection. Float16 for Tesla T4, V100, Bfloat16 for Ampere+
-load_in_4bit = True # Use 4bit quantization to reduce memory usage. Can be False.
+max_seq_length = 2048   # Choose any! RoPE Scaling internally is supported!
+dtype = None            # None for auto detection. Float16 for Tesla T4, V100, Bfloat16 for Ampere+
+load_in_4bit = True     # Use 4bit quantization to reduce memory usage. Can be False.
 
-# 4bit pre quantized models we support for 4x faster downloading + no OOMs.
+# 4bit pre quantized models supported for 4x faster downloading + no OOMs
 fourbit_models = [
     "unsloth/mistral-7b-bnb-4bit",
     "unsloth/mistral-7b-instruct-v0.2-bnb-4bit",
@@ -102,21 +101,21 @@ fourbit_models = [
     "unsloth/llama-2-13b-bnb-4bit",
     "unsloth/codellama-34b-bnb-4bit",
     "unsloth/tinyllama-bnb-4bit",
-    "unsloth/gemma-7b-bnb-4bit", # New Google 6 trillion tokens model 2.5x faster!
+    "unsloth/gemma-7b-bnb-4bit",
     "unsloth/gemma-2b-bnb-4bit",
     "unsloth/Qwen2.5-7B-bnb-4bit",
 ]
 
 # Specify the desired data type (bfloat16 or float16)
-dtype = torch.bfloat16  # or torch.float16
+dtype = torch.bfloat16
 
 model, tokenizer = FastLanguageModel.from_pretrained(
-    model_name = "unsloth/Qwen2.5-7B-bnb-4bit", # Choose ANY! eg teknium/OpenHermes-2.5-Mistral-7B
+    model_name = "unsloth/Qwen2.5-7B-bnb-4bit", # Eg. teknium/OpenHermes-2.5-Mistral-7B
     max_seq_length = max_seq_length,
     dtype = dtype,
     load_in_4bit = load_in_4bit,
-    # token = "", # use one if using gated models like meta-llama/Llama-2-7b-hf
-    trust_remote_code=True, # Added this line to trust remote code
+    # token = "",           # use one if using gated models like meta-llama/Llama-2-7b-hf
+    trust_remote_code=True, # Add this line to trust remote code
 )
 ```
 
@@ -134,11 +133,10 @@ model = FastLanguageModel.get_peft_model(
     lora_alpha = 16,
     lora_dropout = 0, # Supports any, but = 0 is optimized
     bias = "none",    # Supports any, but = "none" is optimized
-    # [NEW] "unsloth" uses 30% less VRAM, fits 2x larger batch sizes!
     use_gradient_checkpointing = "unsloth",  # True or "unsloth" for very long context
     random_state = 3407,
-    use_rslora = False,  # Rank stabilized LoRA supported
-    loftq_config = None,  # And LoftQ
+    use_rslora = False,     # Rank stabilized LoRA supported
+    loftq_config = None,    # And LoftQ
 )
 ```
 
@@ -155,6 +153,7 @@ A full model tune can be done with LoRA, but it is better suited for small adjus
 We utilize the Andy-3.5 dataset, curated and fine-tuned by Sweaterdog, specifically for Minecraft tasks. This dataset is designed to provide the AI with contextual knowledge of Minecraft gameplay, including crafting, exploration, and survival mechanics. The dataset is preprocessed to align with the ChatML format:
 
 ```python
+# Loading the ChatML template
 from unsloth.chat_templates import get_chat_template
 
 tokenizer = get_chat_template(
@@ -170,24 +169,20 @@ def formatting_prompts_func(examples):
     return { "text" : texts, }
 pass
 
+# Loading the dataset
 from datasets import load_dataset
 dataset = load_dataset("Sweaterdog/Andy-3.5", split = "train")
 dataset = dataset.map(formatting_prompts_func, batched = True,)
 ```
 
-Note: To train only on completions (ignoring the user's input) read TRL's docs here.
-
-Using our get_chat_template function, we get the correct chat template.
+Using our `get_chat_template` function, we get the correct chat template.
 
 Normally one has to train `<|im_start|>` and `<|im_end|>`.
 
-Instead map `<|im_end|>` is to be the EOS token, and `<|im_start|>` stays as is.
-
-This requires no additional training of additional tokens.
-
-ShareGPT uses:
+Instead, map `<|im_end|>` is to be the EOS token, and `<|im_start|>` stays as is and requires no extra training for additional tokens.
 
 ```python
+# ShareGPT style
 {"from": "human", "value" : "Hi"}
 ``` 
 
@@ -196,38 +191,46 @@ ShareGPT uses:
 Here is how the format works by printing the fifth element.
 
 ```python
+# Print the fifth element
 dataset[5]["conversations"]
 ```
 
 ```python
+# Print the fifth element
 print(dataset[5]["text"])
 ``` 
 
-## Unsloth Chat Template
+## Unsloth Template
+
+This template defines how the conversation between a user and an assistant should be structured in a text format.
 
 ```python
+# Define a template for structuring chat interactions between user and assistant
 unsloth_template = \
-    "{{ bos_token }}"\
-    "{{ 'You are a helpful assistant to the user\n' }}"\
-    "{% endif %}"\
-    "{% for message in messages %}"\
-        "{% if message['role'] == 'user' %}"\
-            "{{ '>>> User: ' + message['content'] + '\n' }}"\
-        "{% elif message['role'] == 'assistant' %}"\
-            "{{ '>>> Assistant: ' + message['content'] + eos_token + '\n' }}"\
-        "{% endif %}"\
-    "{% endfor %}"\
-    "{% if add_generation_prompt %}"\
-        "{{ '>>> Assistant: ' }}"\
-    "{% endif %}"
+    "{{ bos_token }}" \  # Placeholder for the Beginning of Sequence (BOS) token, start of a sequence.
+    "{{ 'You are a helpful assistant to the user\n' }}" \  # A static string indicating the assistant's role.
+    "{% endif %}" \  # This is an empty "endif" placeholder that might be used for closing a conditional block in the template.
+    "{% for message in messages %}" \  # Start a loop over a list of messages to process each one.
+        "{% if message['role'] == 'user' %}" \  # Check if the message is from the user.
+            "{{ '>>> User: ' + message['content'] + '\n' }}" \  # Format the user's message with a prefix ">>> User:".
+        "{% elif message['role'] == 'assistant' %}" \  # Check if the message is from the assistant.
+            "{{ '>>> Assistant: ' + message['content'] + eos_token + '\n' }}" \  # Format the assistant's message with a prefix ">>> Assistant:" and append the EOS token.
+        "{% endif %}" \  # Close the conditional block for the "if-elif".
+    "{% endfor %}" \  # Close the loop that iterates through messages.
+    "{% if add_generation_prompt %}" \  # Check if we need to add a generation prompt.
+        "{{ '>>> Assistant: ' }}" \  # If the condition is true, add a prompt indicating the assistant should respond.
+    "{% endif %}"  # Close the "if" block for the generation prompt condition.
+
+# Define the EOS (End of Sequence) token used to mark the end of the assistant's response.
 unsloth_eos_token = "eos_token"
 
-if False:
+# The following block is a configuration that won't be executed because the condition is 'False'.
+if False:  # This condition prevents the code inside the block from executing.
     tokenizer = get_chat_template(
-        tokenizer,
-        chat_template = (unsloth_template, unsloth_eos_token,), # You must provide a template and EOS token
-        mapping = {"role" : "from", "content" : "value", "user" : "human", "assistant" : "gpt"}, # ShareGPT style
-        map_eos_token = True, # Maps <|im_end|> to </s> instead
+        tokenizer,  # The tokenizer object to be updated.
+        chat_template = (unsloth_template, unsloth_eos_token,),  # Provide the template (unsloth_template) and EOS token.
+        mapping = {"role" : "from", "content" : "value", "user" : "human", "assistant" : "gpt"},  # Define a mapping to convert between different naming conventions (e.g., 'role' -> 'from', 'content' -> 'value').
+        map_eos_token = True,  # A flag that, if set to True, will map <|im_end|> to </s> (used as an EOS token).
     )
 ```
 
@@ -246,34 +249,44 @@ For a full run, it is recommended to set `max_steps` to `0` and a new parameter 
 Include `num_train_epochs = 1` to specify a single epoch.
 
 ```python
-from trl import SFTTrainer
-from transformers import TrainingArguments
-from unsloth import is_bfloat16_supported
+# Import necessary modules for training
+from trl import SFTTrainer  # SFTTrainer is a specialized trainer for supervised fine-tuning (SFT).
+from transformers import TrainingArguments  # TrainingArguments is used to configure training parameters.
+from unsloth import is_bfloat16_supported  # Utility to check if bfloat16 (Brain Floating Point 16) is supported by the hardware.
 
+# Initialize the SFTTrainer with the necessary parameters
 trainer = SFTTrainer(
-    model = model,
-    tokenizer = tokenizer,
-    train_dataset = dataset,
-    dataset_text_field = "text",
-    max_seq_length = max_seq_length,
-    dataset_num_proc = 2, # Changed from 2 to 1 to disable multiprocessing
-    packing = False,      # Can make training 5x faster for short sequences.
+    model = model,      # The model that will be fine-tuned.
+    tokenizer = tokenizer,  # The tokenizer to preprocess the input text data.
+    train_dataset = dataset,  # The dataset used for training.
+    dataset_text_field = "text",  # The name of the field in the dataset containing the text data.
+    max_seq_length = max_seq_length,  # Maximum sequence length to truncate/pad the input sequences to.
+    
+    dataset_num_proc = 2,  # Number of processes to use for dataset preprocessing. Set to 1 to disable multiprocessing for debugging or resource constraints.
+    
+    packing = False,  # Enables packing of sequences into batches. Can speed up training for short sequences but might not work well for long sequences.
+    
+    # TrainingArguments define the hyperparameters for the training process.
     args = TrainingArguments(
-        per_device_train_batch_size = 16, # Reduce to 1 if out of memory on free tier
-        gradient_accumulation_steps = 1,  # Further reduced to 1
-        warmup_steps = 500,
-        max_steps = 1000,     # Default was set to 60
-        learning_rate = 2e-5, # Default was set to 2e-4
-        fp16 = not is_bfloat16_supported(),
-        bf16 = is_bfloat16_supported(),
-        logging_steps = 1,
-        optim = "adamw_8bit",
-        weight_decay = 0.01,
-        lr_scheduler_type = "linear",
-        seed = 3407,
-        output_dir = "outputs",
-        # Enable gradient checkpointing to reduce memory usage
-        gradient_checkpointing=True,
+        per_device_train_batch_size = 16,  # Batch size per device during training. You may need to reduce to 1 if running out of memory.
+        gradient_accumulation_steps = 1,  # Number of steps to accumulate gradients before updating model weights. Set to 1 to update after every batch.
+        warmup_steps = 500,  # Number of steps to perform learning rate warmup.
+        max_steps = 1000,  # Total number of training steps.
+        learning_rate = 2e-5,  # Default is typically higher, but this has been reduced to avoid overshooting.
+        
+        fp16 = not is_bfloat16_supported(),  # Enable mixed precision training using FP16 if bfloat16 is not supported by the hardware.
+        bf16 = is_bfloat16_supported(),  # Enable bfloat16 training if supported by the hardware (this is common for TPU and some GPUs).
+        
+        logging_steps = 1,  # How often to log training information (in terms of steps). Here, it's set to log after every step.
+        
+        optim = "adamw_8bit",  # Use the AdamW optimizer with 8-bit precision to save memory and improve performance.
+        weight_decay = 0.01,  # Apply weight decay regularization to avoid overfitting. Typically used with AdamW optimizers.
+        
+        lr_scheduler_type = "linear",  # Linear learning rate scheduler, decaying from the initial learning rate to 0.
+        seed = 3407,  # Random seed for reproducibility of results.
+        output_dir = "outputs",  # Directory where the training output (model checkpoints, logs, etc.) will be saved.
+        
+        gradient_checkpointing = True,  # Enable gradient checkpointing to reduce memory usage during training. Useful for large models.
     ),
 )
 ```
@@ -315,7 +328,6 @@ trainer_stats = trainer.train()
 Review and collect the final memory and time statistics.
 
 ```python
-# Show final memory and time stats
 used_memory = round(torch.cuda.max_memory_reserved() / 1024 / 1024 / 1024, 3)
 used_memory_for_lora = round(used_memory - start_gpu_memory, 3)
 used_percentage = round(used_memory         /max_memory*100, 3)
@@ -396,8 +408,8 @@ To save the final model as LoRA adapters, either use Huggingface's `push_to_hub`
 # tokenizer.save_pretrained("lora_model")
 
 # Online saving
-model.push_to_hub("your-hf-username/Qwen2.5-7b-bnb-4bit-Andy-3.5-latest-lora-model-tutorial", token = "yout-token") # Online saving
-tokenizer.push_to_hub("your-hf-username/Qwen2.5-7b-bnb-4bit-Andy-3.5-latest-lora-model-tutorial", token = "your-token") # Online saving
+model.push_to_hub("your-hf-username/model-name", token = "your-token") # Online saving
+tokenizer.push_to_hub("your-hf-username/model-name", token = "your-token") # Online saving
 ```
 
 ## Load Lora Adapters
